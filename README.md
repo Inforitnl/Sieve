@@ -115,6 +115,30 @@ public class SieveCustomFilterMethods : ISieveCustomFilterMethods
 }
 ```
 
+### Add custom type conversions.
+
+Sieve has to do a type conversion from the keys in you filter query string to the actual field type in your object you'd like to filter or sort on. Sieve covers this by default for the build in C# types. For filtering and sorting on custom types like for example a [Bson ObjectId](https://mongodb.github.io/mongo-csharp-driver/2.12/apidocs/html/T_MongoDB_Bson_ObjectId.htm) you could use a `ISieveCustomTypeConverter`
+```C#
+public class SieveObjectIdTypeConverter : ISieveCustomTypeConverter
+{
+    /// Return your custom type here.
+    public bool CanConvert(Type targetType)
+    {
+        return targetType == typeof(ObjectId);
+    }
+
+    /// Handle this conversion from string to you custom type.
+    public object Convert(string value)
+    {
+        if (value != null && ObjectId.TryParse(value, out var parsedValue))
+        {
+            return parsedValue;
+        }
+        return ObjectId.Empty;
+    }
+}
+```
+
 ## Configure Sieve
 Use the [ASP.NET Core options pattern](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options) with `SieveOptions` to tell Sieve where to look for configuration. For example:
 ```C#
